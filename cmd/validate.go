@@ -312,7 +312,7 @@ func validateInterfaceContracts(pkg *ast.Package, files map[string]*ast.File) []
 		// Check for exported structs (should be unexported in GEAR)
 		// BUT exclude models, DTOs, requests, responses, and configs
 		for _, structInfo := range structs {
-			if structInfo.IsExported && shouldBeUnexported(structInfo.Name, filePath) {
+			if structInfo.IsExported && shouldBeUnexported(structInfo.Name, filePath, file) {
 				pos := globalFileSet.Position(structInfo.Position)
 				errors = append(errors, ValidationError{
 					Rule:     "R01-interface-contracts",
@@ -346,7 +346,12 @@ func validateInterfaceContracts(pkg *ast.Package, files map[string]*ast.File) []
 
 // shouldBeUnexported determines if a struct should be unexported based on GEAR rules
 // Returns true only for service/business logic structs, false for models/DTOs/configs
-func shouldBeUnexported(structName, filePath string) bool {
+func shouldBeUnexported(structName, filePath string, file *ast.File) bool {
+	// If struct has no methods, it's a data structure and should be exported
+	if !structHasMethods(structName, file) {
+		return false
+	}
+
 	// Models, DTOs, requests, responses should remain exported
 	if isDataStruct(structName) {
 		return false
@@ -408,6 +413,31 @@ func isDataStruct(name string) bool {
 		}
 	}
 
+	return false
+}
+
+// structHasMethods checks if a struct has any methods defined in the same file
+func structHasMethods(structName string, file *ast.File) bool {
+	for _, decl := range file.Decls {
+		funcDecl, ok := decl.(*ast.FuncDecl)
+		if !ok || funcDecl.Recv == nil {
+			continue
+		}
+
+		// Check if this method belongs to our struct
+		for _, recv := range funcDecl.Recv.List {
+			switch recvType := recv.Type.(type) {
+			case *ast.Ident:
+				if recvType.Name == structName {
+					return true
+				}
+			case *ast.StarExpr:
+				if ident, ok := recvType.X.(*ast.Ident); ok && ident.Name == structName {
+					return true
+				}
+			}
+		}
+	}
 	return false
 }
 
