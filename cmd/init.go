@@ -94,6 +94,10 @@ func initializeProject() error {
 		return err
 	}
 
+	if err := generateGearRC(); err != nil {
+		return err
+	}
+
 	fmt.Printf("✅ GEAR project %s created successfully!\n", projectName)
 	fmt.Printf("\nNext steps:\n")
 	fmt.Printf("  cd %s\n", projectName)
@@ -317,6 +321,26 @@ docker-run:
 `
 
 	return writeProjectFile("Makefile", content)
+}
+
+func generateGearRC() error {
+	content := `exclude:
+  - "vendor"
+  - "*_test.go"
+  - "*.pb.go"
+  - "scripts"
+  - "docs"
+
+rules:
+  R01: "warning"  # Interface contracts (exported interfaces, unexported structs)
+  R02: "error"    # Interface usage (no pointer-to-interface anti-patterns)
+  R03: "warning"  # Constructor patterns (returning interfaces)
+  R04: "info"     # Domain boundaries (clean layer separation)
+  R05: "error"    # Centralized configuration (internal/config package)
+  R06: "error"    # Systematic error handling (internal/errors package)
+`
+
+	return writeProjectFile(".gearrc", content)
 }
 
 func writeProjectFile(fileName, content string) error {

@@ -18,7 +18,7 @@ var rootCmd = &cobra.Command{
 │                                                          │
 │            Go Engineering Architecture Rules             │
 │                                           by @gomessguii │
-│                                                   v0.0.1 │
+│                                                   v0.0.2 │
 └──────────────────────────────────────────────────────────┘
 
 GEAR CLI is a command-line tool for creating and managing Go projects
@@ -31,7 +31,7 @@ Available Rules:
 - R04: Domain boundaries (clean layer separation) [default: info]
 - R05: Centralized configuration (internal/config package) [default: error]
 - R06: Systematic error handling (internal/errors package) [default: error]`,
-	Version: "0.0.1",
+	Version: "0.0.2",
 }
 
 func Execute() error {
