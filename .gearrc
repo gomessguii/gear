@@ -1,0 +1,9 @@
+exclude:
+  - "vendor"
+  - "*_test.go"
+  - "*.pb.go"
+  - "scripts"
+
+rules:
+  R01: "warning"
+  R02: "error"
